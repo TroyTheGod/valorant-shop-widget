@@ -1,10 +1,12 @@
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,18 +24,21 @@ fun App() {
         var greetingText by remember { mutableStateOf("Hello World!") }
         var showImage by remember { mutableStateOf(false) }
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = {
-                greetingText = "Compose: ${Greeting().greet()}"
-                showImage = !showImage
-            }) {
-                Text(greetingText)
-            }
+            Spacer(Modifier.weight(1.0f))
+           TextField(
+           value = "Username",
+             onValueChange = {
+                 
+             }
+
+           )
             AnimatedVisibility(showImage) {
                 Image(
                     painterResource("compose-multiplatform.xml"),
                     null
                 )
             }
+            Spacer(Modifier.weight(1.0f))
         }
     }
 }
