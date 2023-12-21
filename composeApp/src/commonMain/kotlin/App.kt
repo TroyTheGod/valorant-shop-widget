@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import store.TokenStore
 
 @Composable
 fun App() {
@@ -64,8 +65,15 @@ fun App() {
                 onClick = {
                     GlobalScope.launch {
                         startLogin = true
-                        Http().getToken("CafeEv0", "xillxiii13021")
+                        val response = Http().getToken("CafeEv0", "xillxiii13021")
                         startLogin = false
+
+                        if (response?.success == true) {
+                            TokenStore().setToken(response.authTokenModel)
+                            // TODO: next page
+                        } else {
+                            // TODO: show error?
+                        }
                     }
                 }
             ) {
