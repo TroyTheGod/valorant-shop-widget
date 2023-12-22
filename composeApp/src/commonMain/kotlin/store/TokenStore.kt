@@ -1,26 +1,28 @@
 package store
 
-import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
 import kotlinx.serialization.json.Json
 import model.AuthTokenModel
 
 class TokenStore {
-    private val settings by lazy { Settings }
-    private val observableSettings by lazy { settings as ObservableSettings }
+    private val settings: Settings by lazy { Settings() }
 
 
     fun getToken(): AuthTokenModel? {
+        val jsonString = settings.getString("token", "");
+        if (jsonString.isEmpty()) {
+            return null
+        }
         return Json.decodeFromString(
             AuthTokenModel.serializer(),
-            observableSettings.getString("token", "")
+            jsonString
         )
     }
 
     fun setToken(value: AuthTokenModel?) {
         if (value != null) {
-            observableSettings.set(
+            settings.set(
                 "token",
                 Json.encodeToString(AuthTokenModel.serializer(), value)
             )

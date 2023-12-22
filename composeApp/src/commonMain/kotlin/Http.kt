@@ -51,7 +51,7 @@ class Http {
             val loginRequestModel = LoginRequestModel(
                 language = "en_US",
                 password = password,
-                remember = "False",
+                remember = "True",
                 type = "auth",
                 username = username,
             )
@@ -99,7 +99,7 @@ class Http {
                 val expires = it.groupValues[3]
 
                 return AuthTokenModelWrapper(
-                    false, "other", AuthTokenModel(
+                    true, "other", AuthTokenModel(
                         accessToken = token,
                         idToken = tokenId,
                         expires = expires.toIntOrNull() ?: 0
@@ -109,4 +109,6 @@ class Http {
         }
         return null
     }
+
+    
 }

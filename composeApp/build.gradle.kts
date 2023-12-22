@@ -26,6 +26,7 @@ kotlin {
             isStatic = true
         }
     }
+    val multiplatformSettings = "1.1.1"
 
     sourceSets {
 
@@ -46,7 +47,7 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
-            implementation("com.russhwolf:multiplatform-settings:1.1.1")
+            implementation("com.russhwolf:multiplatform-settings-no-arg:$multiplatformSettings")
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
