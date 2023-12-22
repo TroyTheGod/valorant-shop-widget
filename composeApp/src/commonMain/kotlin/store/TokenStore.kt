@@ -28,4 +28,24 @@ class TokenStore {
             )
         }
     }
+
+    fun setUUid(value: String?) {
+        if (value != null) {
+            settings.set(
+                "uuid", value
+            )
+        }
+    }
+
+    fun getUUid(): String? {
+        val uuid = settings.getString("uuid", "");
+        if (uuid.isNotEmpty()) {
+            return uuid;
+        }
+        return null
+    }
+
+    fun clearToken() {
+        settings.clear()
+    }
 }

@@ -2,14 +2,17 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.cookies.AcceptAllCookiesStorage
 import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import model.AuthTokenModel
@@ -69,8 +72,6 @@ class Http {
             }
             val authString = response.body<String>()
             val authJson = Json.parseToJsonElement(authString)
-            val bb = authJson.jsonObject.get("type")?.jsonPrimitive?.content
-            print(bb)
             if (authJson.jsonObject["type"].toString() == "auth_failure") {
                 return AuthTokenModelWrapper(
                     false, "auth_failure",
@@ -82,10 +83,6 @@ class Http {
             }
             val pattern =
                 Regex("access_token=((?:[a-zA-Z]|\\d|\\.|\\-|_)*).*id_token=((?:[a-zA-Z]|\\d|\\.|\\-|_)*).*expires_in=(\\d*)")
-            val aa =
-                authJson.jsonObject["response"]?.jsonObject?.get("parameters")?.jsonObject?.get("uri")
-                    ?.jsonPrimitive?.content
-            print(aa)
             val data =
                 pattern.find(
                     authJson.jsonObject["response"]?.jsonObject?.get("parameters")?.jsonObject?.get(
@@ -110,5 +107,53 @@ class Http {
         return null
     }
 
-    
+    suspend fun getPlayerUuid(authTokenModel: AuthTokenModel): String? {
+        val result = client.get("https://auth.riotgames.com/userinfo") {
+            headers {
+                append("Authorization", "Bearer ${authTokenModel.accessToken}")
+            }
+        }
+        if (result.status != HttpStatusCode.OK) {
+            val aa = result.body<String>()
+            return null
+        }
+        val playerInfoString = result.body<String>()
+        val authJson = Json.parseToJsonElement(playerInfoString)
+        return authJson.jsonObject.get("sub")?.jsonPrimitive?.content;
+    }
+
+
+    suspend fun getEntitlementToken(authTokenModel: AuthTokenModel): String? {
+        val result = client.post("https://entitlements.auth.riotgames.com/api/token/v1") {
+            headers {
+                append("Content-Type", "application/json")
+                append("Authorization", "Bearer ${authTokenModel.accessToken}")
+            }
+        }
+        val tokenString = result.body<String>()
+        val tokenJson = Json.parseToJsonElement(tokenString)
+        return tokenJson.jsonObject.get("entitlements_token")?.jsonPrimitive?.content
+    }
+
+    suspend fun getStoreFront(
+        authTokenModel: AuthTokenModel,
+        uuid: String,
+        entitlementToken: String
+    ): ArrayList<String>? {
+        val region = "ap";
+        val result = client.get("https://pd.$region.a.pvp.net/store/v2/storefront/$uuid") {
+            headers {
+                append("X-Riot-Entitlements-JWT", entitlementToken)
+                append("Authorization", "Bearer ${authTokenModel.accessToken}")
+            }
+        }
+        val storeString = result.body<String>()
+        val storeJson = Json.parseToJsonElement(storeString)
+        var weaponsList: ArrayList<String> = arrayListOf()
+        storeJson.jsonObject.get("SkinsPanelLayout")?.jsonObject?.get("SingleItemOffers")?.jsonArray?.forEach {
+            weaponsList.add(it.jsonPrimitive.content)
+        }
+        print(weaponsList)
+        return weaponsList
+    }
 }
