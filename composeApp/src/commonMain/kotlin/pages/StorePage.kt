@@ -2,18 +2,24 @@ package pages
 
 import Http
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 import model.AuthTokenModel
 import store.TokenStore
 
 
 @Composable
 fun StorePage(onLoginStateChange: (Boolean) -> Unit) {
+    var weapons = remember { arrayListOf<String>().toMutableStateList() }
+
     var token: AuthTokenModel? = null
     fun logout() {
         TokenStore().clearToken()
@@ -39,21 +45,32 @@ fun StorePage(onLoginStateChange: (Boolean) -> Unit) {
             logout()
             return@LaunchedEffect
         }
-        Http().getStoreFront(token!!, uuid!!, entitlementToken!!)
+        val newWeapons = Http().getStoreFront(token!!, uuid!!, entitlementToken!!) ?: listOf()
+        weapons.clear()
+        weapons.addAll(newWeapons)
+        println(weapons)
     }
+
     Column {
         Text(
-            text = "Store Page"
+            text = if (weapons.isEmpty()) "Store Page" else weapons.first()
         )
-        OutlinedButton(
-            onClick = {
-                GlobalScope.launch {
-
+        for (weapon in weapons) {
+            val url = "https://media.valorant-api.com/weaponskinlevels/$weapon/displayicon.png"
+            KamelImage(
+                asyncPainterResource(url),
+                "skins:$weapon",
+                modifier = Modifier.height(100.0.dp),
+                onLoading = {
+                    Text("Loading...$url")
+                },
+                onFailure = {
+                    println(url)
+                    Text("$url fail, ${it.toString()}")
                 }
-            }
-        ) {
-            Text("Test")
+            )
         }
+
     }
 
 }
