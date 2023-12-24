@@ -81,25 +81,21 @@ class Http {
                     false, "other",
                 )
             }
-            val pattern =
-                Regex("access_token=((?:[a-zA-Z]|\\d|\\.|\\-|_)*).*id_token=((?:[a-zA-Z]|\\d|\\.|\\-|_)*).*expires_in=(\\d*)")
-            val data =
-                pattern.find(
-                    authJson.jsonObject["response"]?.jsonObject?.get("parameters")?.jsonObject?.get(
-                        "uri"
-                    )
-                        ?.jsonPrimitive?.content ?: ""
-                )
-            data?.let {
-                val token = it.groupValues[1]
-                val tokenId = it.groupValues[2]
-                val expires = it.groupValues[3]
+            val params = extractParams(
+                authJson.jsonObject["response"]?.jsonObject?.get("parameters")?.jsonObject?.get("uri")
+                    ?.jsonPrimitive?.content ?: ""
+            )
+
+            if (params.isNotEmpty()) {
+                val token = params["access_token"]
+                val tokenId = params["id_token"]
+                val expires = params["expires_in"]
 
                 return AuthTokenModelWrapper(
                     true, "other", AuthTokenModel(
-                        accessToken = token,
-                        idToken = tokenId,
-                        expires = expires.toIntOrNull() ?: 0
+                        accessToken = token ?: "",
+                        idToken = tokenId ?: "",
+                        expires = expires?.toIntOrNull() ?: 0
                     )
                 )
             }
@@ -156,4 +152,24 @@ class Http {
         print(weaponsList)
         return weaponsList
     }
+
+    fun extractParams(url: String): Map<String, String> {
+        // Splitting the URL to get the fragment part (after '#')
+        val fragment = url.substringAfter("#", "")
+
+        // Splitting the fragment into parameters (split by '&')
+        val params = fragment.split("&")
+
+        // Creating a map to hold the key-value pairs
+        val paramMap = mutableMapOf<String, String>()
+
+        // Iterating over the parameters to split them into key and value
+        for (param in params) {
+            val (key, value) = param.split("=")
+            paramMap[key] = value
+        }
+
+        return paramMap
+    }
+
 }

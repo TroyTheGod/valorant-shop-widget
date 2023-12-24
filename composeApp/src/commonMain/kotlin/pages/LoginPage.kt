@@ -82,7 +82,7 @@ fun LoginPage(
                 onClick = {
                     GlobalScope.launch {
                         startLogin = true
-                        val response = Http().getToken("CafeEv0", "xillxiii13021")
+                        val response = Http().getToken(userName, password)
                         startLogin = false
 
                         if (response?.success == true) {

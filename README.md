@@ -20,6 +20,12 @@ about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform
 come on! i just want a simple screen navigation tools like Navigator.push() and Navigator.pop(), how
 it this shit so HARD RIGHT FUCKING HERE????
 
+[MotherFucker Regex will even crash on ios devices damn it, Kmm is fucking trash RIGHT FUCKING NOW]
+Regex("access_token=((?:[a-zA-Z]|\\d|\\.|\\-|_)*).*id_token=((?:[a-zA-Z]|\\d|\\.|\\-|_)*).
+*expires_in=(\\d*)").find() just fucking crash on ios devices,
+And NOT FUCKING ONE CAN FUCKING FIX IT
+https://youtrack.jetbrains.com/issue/KT-35508/EXCBADACCESScode2-address0x16d8dbff0-crashes-on-iOS-when-using-a-sequence-from-map-etc
+
 [Just GO flutter instead, this shits is not ready to use RIGHT FUCKING NOW!!!]
 
 valorant api:
