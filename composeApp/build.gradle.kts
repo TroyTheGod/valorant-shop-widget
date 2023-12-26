@@ -49,6 +49,7 @@ kotlin {
             implementation("media.kamel:kamel-image:0.9.1")
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
             implementation("com.russhwolf:multiplatform-settings-no-arg:$multiplatformSettings")
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

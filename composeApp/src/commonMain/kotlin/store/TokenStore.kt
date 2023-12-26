@@ -45,6 +45,22 @@ class TokenStore {
         return null
     }
 
+    fun setCookie(value: String?) {
+        if (value != null) {
+            settings.set(
+                "cookie", value
+            )
+        }
+    }
+
+    fun getCookie(): String? {
+        val uuid = settings.getString("cookie", "");
+        if (uuid.isNotEmpty()) {
+            return uuid;
+        }
+        return null
+    }
+
     fun clearToken() {
         settings.clear()
     }
