@@ -32,6 +32,7 @@ class Http {
         install(HttpCookies) {
             storage = AcceptAllCookiesStorage()
         }
+        followRedirects = false
     }
 
     suspend fun getToken(username: String, password: String): AuthTokenModelWrapper? {
@@ -111,12 +112,22 @@ class Http {
         return null
     }
 
-    suspend fun cookieReAuth() {
+    suspend fun cookieReAuth(): AuthTokenModelWrapper {
         val response =
             client.get("https://auth.riotgames.com/authorize?redirect_uri=https%3A%2F%2Fplayvalorant.com%2Fopt_in&client_id=play-valorant-web-prod&response_type=token%20id_token&nonce=1&scope=account%20openid")
-        val bb = response.call.
-        val aa = response.headers["Location"]
-        print(bb)
+        val redirectUrl = response.headers["Location"]
+        if (redirectUrl?.startsWith("https://playvalorant.com/opt_in#access_token") == true) {
+            val params = extractParams(redirectUrl)
+            AuthTokenModelWrapper(
+                true, "other", AuthTokenModel(
+                    accessToken = params["access_token"] ?: "",
+                    idToken = params["id_token"] ?: "",
+                    expires = 3600,
+                )
+            )
+        }
+        return AuthTokenModelWrapper(false, "cookie not working")
+
     }
 
     suspend fun getPlayerUuid(authTokenModel: AuthTokenModel): String? {
