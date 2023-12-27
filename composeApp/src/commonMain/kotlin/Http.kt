@@ -99,7 +99,6 @@ class Http {
                 val tokenId = params["id_token"]
                 val expires = params["expires_in"]
                 storeCookie()
-                cookieReAuth()
                 return AuthTokenModelWrapper(
                     true, "other", AuthTokenModel(
                         accessToken = token ?: "",
@@ -118,7 +117,7 @@ class Http {
         val redirectUrl = response.headers["Location"]
         if (redirectUrl?.startsWith("https://playvalorant.com/opt_in#access_token") == true) {
             val params = extractParams(redirectUrl)
-            AuthTokenModelWrapper(
+            return AuthTokenModelWrapper(
                 true, "other", AuthTokenModel(
                     accessToken = params["access_token"] ?: "",
                     idToken = params["id_token"] ?: "",
@@ -184,7 +183,7 @@ class Http {
         TokenStore().setCookie(jsonString)
     }
 
-    private suspend fun restoreCookie(): Boolean {
+    suspend fun restoreCookie(): Boolean {
         val jsonString = TokenStore().getCookie()
         if (jsonString != null) {
             val customStorage = AcceptAllCookiesStorage()
@@ -196,6 +195,7 @@ class Http {
                 install(HttpCookies) {
                     storage = customStorage
                 }
+                followRedirects = false
             }
         }
         return jsonString != null

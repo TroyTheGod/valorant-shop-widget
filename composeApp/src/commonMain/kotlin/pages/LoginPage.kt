@@ -86,7 +86,6 @@ fun LoginPage(
                         startLogin = false
 
                         if (response?.success == true) {
-                            TokenStore().setToken(response.authTokenModel)
                             val uuid = Http().getPlayerUuid(response.authTokenModel!!)
                             TokenStore().setUUid(uuid)
                             onLoginStateChange(true)

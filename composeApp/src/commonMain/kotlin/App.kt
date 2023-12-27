@@ -15,7 +15,7 @@ fun App() {
         var isLogin by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
-            val token = TokenStore().getToken()
+            val token = TokenStore().getCookie()
             if (token != null) {
                 isLogin = true
             }

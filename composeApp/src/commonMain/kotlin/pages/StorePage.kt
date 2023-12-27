@@ -21,15 +21,27 @@ fun StorePage(onLoginStateChange: (Boolean) -> Unit) {
     var weapons = remember { arrayListOf<String>().toMutableStateList() }
 
     var token: AuthTokenModel? = null
+
     fun logout() {
         TokenStore().clearToken()
         onLoginStateChange(false)
     }
     LaunchedEffect(Unit) {
-        token = TokenStore().getToken()
-        if (token == null) {
+        val http = Http()
+        val success = http.restoreCookie()
+        if (!success) {
+            logout()
             return@LaunchedEffect
         }
+
+        val wrapper = http.cookieReAuth()
+        if (wrapper.success) {
+            token = wrapper.authTokenModel
+        } else {
+            logout()
+            return@LaunchedEffect
+        }
+
         var uuid = TokenStore().getUUid()
         if (uuid == null) {
             val result = Http().getPlayerUuid(token!!)
@@ -48,7 +60,6 @@ fun StorePage(onLoginStateChange: (Boolean) -> Unit) {
         val newWeapons = Http().getStoreFront(token!!, uuid!!, entitlementToken!!) ?: listOf()
         weapons.clear()
         weapons.addAll(newWeapons)
-        println(weapons)
     }
 
     Column {
