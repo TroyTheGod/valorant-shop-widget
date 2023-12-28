@@ -7,5 +7,5 @@
     android:targetCellWidth="4"
     android:targetCellHeight="2"
     android:initialLayout="@layout/valorant_shop_widget_loading"
-    android:updatePeriodMillis="1000"
+    android:updatePeriodMillis="14400000"
     android:widgetCategory="home_screen" />

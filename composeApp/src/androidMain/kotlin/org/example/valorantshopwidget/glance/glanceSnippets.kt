@@ -2,6 +2,8 @@ package org.example.valorantshopwidget.glance
 
 import Http
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -10,20 +12,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceId
+import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
+import androidx.glance.Image
+import androidx.glance.ImageProvider
+import androidx.glance.LocalSize
+import androidx.glance.appwidget.CircularProgressIndicator
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
+import androidx.glance.background
+import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
+import androidx.glance.layout.padding
+import androidx.glance.layout.size
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import io.kamel.image.KamelImage
-import io.kamel.image.asyncPainterResource
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import model.AuthTokenModel
 import store.TokenStore
 
@@ -33,7 +48,29 @@ class ValorantShopWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
             GlanceTheme {
-                content()
+                Box(modifier = GlanceModifier.background(GlanceTheme.colors.primary)) {
+                    content()
+                }
+            }
+        }
+    }
+
+    suspend fun downloadImageAsBitmap(url: String): Bitmap? {
+        val client = HttpClient()
+
+        // Making the network call on the IO dispatcher
+        return withContext(Dispatchers.IO) {
+            try {
+                // Execute the GET request
+                val byteArray = client.get(url).body<ByteArray>()
+
+                // Convert ByteArray to Bitmap
+                BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null // Handle exceptions or return a default image
+            } finally {
+                client.close()
             }
         }
     }
@@ -42,6 +79,8 @@ class ValorantShopWidget : GlanceAppWidget() {
     fun content() {
         var loadFinish by remember { mutableStateOf(false) }
         var weapons = remember { arrayListOf<String>().toMutableStateList() }
+
+        val size = LocalSize.current
 
         fun getImageUrl(index: Int): String {
             return "https://media.valorant-api.com/weaponskinlevels/${weapons[index]}/displayicon.png"
@@ -58,77 +97,57 @@ class ValorantShopWidget : GlanceAppWidget() {
                 }
             )
         } else {
-            Column {
+            Column(GlanceModifier.padding(20.0.dp)) {
                 Row {
-                    //TODO kamelImage may not be able to use here
-                    KamelImage(
-                        asyncPainterResource(getImageUrl(0)),
-                        "skins",
-                        onLoading = {
-                            Text(
-                                "Loading...$${getImageUrl(0)}",
-                                style = TextStyle(color = ColorProvider(Color.White)),
-                            )
-                        },
-                        onFailure = {
-                            Text(
-                                "$${getImageUrl(0)} fail, ${it.toString()}",
-                                style = TextStyle(color = ColorProvider(Color.White)),
-                            )
-                        }
+                    displayImage(
+                        getImageUrl(0),
+                        modifier = GlanceModifier.size(
+                            size.width / 2 - 20.0.dp,
+                            size.height / 2 - 20.0.dp
+                        )
                     )
-                    KamelImage(
-                        asyncPainterResource(getImageUrl(1)),
-                        "skins",
-                        onLoading = {
-                            Text(
-                                "Loading...$${getImageUrl(1)}",
-                                style = TextStyle(color = ColorProvider(Color.White)),
-                            )
-                        },
-                        onFailure = {
-                            Text(
-                                "$${getImageUrl(1)} fail, ${it.toString()}",
-                                style = TextStyle(color = ColorProvider(Color.White)),
-                            )
-                        }
+                    displayImage(
+                        getImageUrl(1),
+                        modifier = GlanceModifier.size(
+                            size.width / 2 - 20.0.dp,
+                            size.height / 2 - 20.0.dp
+                        )
                     )
                 }
                 Row {
-                    KamelImage(
-                        asyncPainterResource(getImageUrl(2)),
-                        "skins",
-                        onLoading = {
-                            Text(
-                                "Loading...$${getImageUrl(2)}",
-                                style = TextStyle(color = ColorProvider(Color.White)),
-                            )
-                        },
-                        onFailure = {
-                            Text(
-                                "$${getImageUrl(2)} fail, ${it.toString()}",
-                                style = TextStyle(color = ColorProvider(Color.White)),
-                            )
-                        }
+                    displayImage(
+                        getImageUrl(2),
+                        modifier = GlanceModifier.size(
+                            size.width / 2 - 20.0.dp,
+                            size.height / 2 - 20.0.dp
+                        )
                     )
-                    KamelImage(
-                        asyncPainterResource(getImageUrl(3)),
-                        "skins",
-                        onLoading = {
-                            Text(
-                                "Loading...$${getImageUrl(3)}",
-                                style = TextStyle(color = ColorProvider(Color.White)),
-                            )
-                        },
-                        onFailure = {
-                            Text(
-                                "$${getImageUrl(3)} fail, ${it.toString()}",
-                                style = TextStyle(color = ColorProvider(Color.White)),
-                            )
-                        }
+                    displayImage(
+                        getImageUrl(3),
+                        modifier = GlanceModifier.size(
+                            size.width / 2 - 20.0.dp,
+                            size.height / 2 - 20.0.dp
+                        )
                     )
                 }
             }
+        }
+    }
+
+    @Composable
+    fun displayImage(url: String, modifier: GlanceModifier) {
+        var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+        LaunchedEffect(Unit) {
+            bitmap = downloadImageAsBitmap(url)
+        }
+        if (bitmap == null) {
+            CircularProgressIndicator()
+        } else {
+            Image(
+                provider = ImageProvider(bitmap!!),
+                "skins",
+                modifier = modifier,
+            )
         }
     }
 
